@@ -1,0 +1,43 @@
+{
+
+  "manifest_version": 2,
+  "name": "Tiles to GeoJSON",
+  "version": "1.1",
+
+  "description": "Konverze strava aktivit ze statshunters.com do souboru GeoJSON",
+  
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "svpetr@email.cz"
+    }
+  },
+  
+
+  "icons": {
+	"24": "icons/TTGJSON-24.png",
+    "48": "icons/TTGJSON-48.png",
+	"256": "icons/TTGJSON-256.png"
+  },
+  
+  "permissions": [
+    "https://www.statshunters.com/",
+	"https://statshunters.com/"],
+  
+  
+  
+	
+  "web_accessible_resources": ["icons/TTGJSON-48.png", "icons/TTGJSON-24.png"],
+ 
+ 
+  "background": {
+    "scripts": []
+  },
+  
+ 
+  "content_scripts": [
+    {
+      "matches": ["*://*.statshunters.com/*"],
+      "js": ["TilesToGeoJSON.js"]
+    }
+  ]
+}
