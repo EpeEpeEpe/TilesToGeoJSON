@@ -4,11 +4,11 @@ Konverze strava aktivit ze statshunters.com do souboru GeoJSON
 V levém menu na statshunters.com bude po načtení stránky přidána nová položka "GoeJSON". Po kliknutí na tuto položku dojde ke stažení souboru "GeoJSON".
 
 ## Rozšíření pro Firefox
-Aktuální verze rošíření pro Firefox v adresáři web-ext-artifacts
-https://github.com/EpeEpeEpe/TilesToGeoJSON/tree/origin/web-ext-artifacts	
+Aktuální verze rošíření pro Firefox ke stažení zde:
+https://github.com/EpeEpeEpe/TilesToGeoJSON/releases
 
 ## Rozšíření pro Chrome
-1. Stáhněte aktuální rošíření pro Firefox v adresáři web-ext-artifacts: https://github.com/EpeEpeEpe/TilesToGeoJSON/tree/origin/web-ext-artifacts	
+1. Stáhněte aktuální rošíření pro Firefox: https://github.com/EpeEpeEpe/TilesToGeoJSON/releases
 2. Rozbalte obsah archivu do adresáře např. TilesToGeoJSON
 3. V chrome zvolte MENU - DALŠÍ NÁSTROJE - ROZŠÍŘENÍ
 4. V pravém horním rohu povolte REŽIM PRO VÝVOJÁŘE
@@ -24,7 +24,7 @@ Nevím.. nefunguje.. kdo poradí? :-)
 ## Bookmarklet pro Chrome
 Vytvořte novou záložku a pro adresu uveďte následující URL:
 
-    javascript:$('body').append($("<script src='https://cdn.jsdelivr.net/gh/liskin/locus-graphhopper-gpx@master/locus-graphhopper-gpx.js'></script>"))
+    javascript:$('body').append($("<script%20src='https://cdn.jsdelivr.net/gh/EpeEpeEpe/TilesToGeoJSON@origin/TilesToGeoJSON.js'></script>"))
 
 ## GreaseMonkey/Tampermonkey
 Vytvořte nový skript s obsahem
