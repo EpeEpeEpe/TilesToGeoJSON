@@ -35,15 +35,15 @@ function saveAs(uri, filename) {
 }
 
 function sortFunction(a, b) {
-    if (a[0] === b[0]) {
-    		if (a[1]===b[1])
-        	  return 0;
-        else
-        		return (a[1] < b[1]) ? -1 : 1;
+    if (a[1] === b[1]) {
+		return (a[0] < b[0]) ? -1 : 1;
     }
-    else {
-        return (a[0] < b[0]) ? -1 : 1;
-    }
+    else if (a[1] < b[1]){
+		return -1;
+    } 
+	else if (a[1] > b[1]){
+		return 1;
+    } 
 }
 
 function multiDimensionalUnique(arr) {
@@ -66,7 +66,7 @@ function tile2lat(y,z) {
   return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
 }
 
-function convertSquaresToPolygons(coordinates){
+/*function convertSquaresToPolygons(coordinates){
 	var poly = [];
 	for(var i=0; i<coordinates.length;i++){
 		var polytmp = turf.polygon([coordinates[i]]);	
@@ -89,7 +89,20 @@ function convertSquaresToPolygons(coordinates){
 	var output = '{"geometry": {"type": "Polygon", "coordinates": ' + JSON.stringify(coordinates)+'}, "type": "Feature", "properties": {}}';
 	console.log(output);
 	return output;
+}*/
+
+function mergePolygonWithTile(polygons, starttile, width, height){
+	var square = []
+	square.push([tile2long(starttile[0],14),tile2lat(starttile[1],14)]);
+	square.push([tile2long(starttile[0],14),tile2lat(starttile[1]+height,14)]);
+	square.push([tile2long(starttile[0]+width,14),tile2lat(starttile[1]+height,14)]);
+	square.push([tile2long(starttile[0]+width,14),tile2lat(starttile[1],14)]);
+	square.push([tile2long(starttile[0],14),tile2lat(starttile[1],14)]);	
+	
+	var polytmp = turf.polygon([square]);	
+	return turf.union(polygons, polytmp);
 }
+
 
 function convertTilesToGeoJSON(){
 	//var tiles = JSON.parse('{"tiles":[]}');
@@ -105,10 +118,10 @@ function convertTilesToGeoJSON(){
 	//console.log(tiles);
     //console.log(JSON.stringify(tiles));
     tiles=multiDimensionalUnique(tiles);
-    //tiles.sort(sortFunction);
+    tiles.sort(sortFunction);
     //console.log(tiles);
 	
-	var coordinates = [];
+/*	var coordinates = [];
 	for(var i=0;i<tiles.length; i++){
 		var square = []
 		square.push([tile2long(tiles[i][0],14),tile2lat(tiles[i][1],14)]);
@@ -125,10 +138,31 @@ function convertTilesToGeoJSON(){
 	
 	//console.log("lets save file...");
 	var encoded = window.btoa(output);
-	//console.log(encoded);
-	//document.location.href = "data:application/octet-stream;charset=utf-8;base64,"+encoded;
-	//console.log("done");
+	var file = "data:application/octet-stream;charset=utf-8;base64,"+encoded;
+	saveAs(file, 'tiles.geojson');*/
 	
+	var polygons = turf.polygon([[[0,0],[0,0],[0,0],[0,0],[0,0]]], {"fill": "#0f0"});
+	
+	var i = 0;
+	while(tiles.length>1){
+		var starttile = tiles[i];
+		var width=1;
+		var height=1;
+		while(i+width<tiles.length){
+			if (!(tiles[i+width][0]==tiles[i+width-1][0]+1 && tiles[i+width][1]==tiles[i+width-1][1])
+				||			(tiles.length==i+width+1)){
+				if (tiles.length==i+width+1)
+					width++;
+				polygons = mergePolygonWithTile(polygons, starttile, width, height);
+				tiles.splice(i,width);
+				break;
+			}
+			width++;
+		}
+	}	
+	
+	var output = JSON.stringify(polygons);
+	var encoded = window.btoa(output);
 	var file = "data:application/octet-stream;charset=utf-8;base64,"+encoded;
 	saveAs(file, 'tiles.geojson');
 
