@@ -30,3 +30,8 @@ Vytvořte novou záložku a pro adresu uveďte následující URL:
 Vytvořte nový skript s obsahem
 https://github.com/EpeEpeEpe/TilesToGeoJSON/blob/origin/TilesToGeoJSON.js
 	
+	
+## Poděkování
+Děkuji uživatelům Bike-forum.cz za testování, rady, náměty,..
+
+Speciální dík patří uživateli "gdh" za implementaci filtrů
