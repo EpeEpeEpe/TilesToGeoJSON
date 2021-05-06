@@ -54,8 +54,7 @@ function mergePolygonWithTile(polygons, starttile, width, height){
 	return turf.union(polygons, polytmp);
 }
 
-
-function convertTilesToGeoJSON(){
+function getTiles(){
 	var tiles = [];
 	for(var i=0;i<activities.length; i++){
 		var tilestmp = activities[i]["tiles"];
@@ -70,6 +69,12 @@ function convertTilesToGeoJSON(){
 	tiles.sort(([a, b],[c, d]) => b - d || a - c);
 
 	console.log("Number of unique tiles:", tiles.length);
+  
+  return tiles;  
+}
+
+function convertTilesToGeoJSON(){
+	var tiles = getTiles();
 
 	var polygons = turf.polygon([[[0,0],[0,0],[0,0],[0,0],[0,0]]], {"fill": "#0f0"});
 	var c=0;
@@ -98,12 +103,85 @@ function convertTilesToGeoJSON(){
 	saveAs(file, 'tiles.geojson');
 }
 
+function getKMLCoordinates(tile){
+	var str = tile2long(tile[0],14) +","+ tile2lat(tile[1],14);
+	str += " " + tile2long(tile[0],14) +","+ tile2lat(tile[1]+1,14);
+	str += " " + tile2long(tile[0]+1,14) +","+ tile2lat(tile[1]+1,14);
+	str += " " + tile2long(tile[0]+1,14) +","+ tile2lat(tile[1],14);
+	str += " " + tile2long(tile[0],14) +","+ tile2lat(tile[1],14);
+  return str;
+}
+
+function convertTilesToMissingKML(){
+	var tiles = getTiles();
+//zjisteni min/max x/y
+	  var minx = 16384; 
+	  var miny = 16384;
+	  var maxx = 0;
+	  var maxy = 0;
+	  var i=0;
+	  while(i<tiles.length){
+		if (tiles[i][0]<minx)
+		  minx = tiles[i][0];
+		if (tiles[i][1]<miny)
+		  miny = tiles[1][1];
+		if (tiles[i][0]>maxx)
+		  maxx = tiles[i][0];
+		if (tiles[i][1]>maxy)
+		  maxy = tiles[i][1];
+		i++;
+	  }
+
+	  //console.log("minx: ", minx, ", maxx: ", maxx,"miny: ",miny,", maxy: ", maxy)
+
+	  //vygenerovani chybejicich ctvercu ve zjistenych min/max souradnicich
+	  i = 0;
+	  var missingtiles = [];
+	  for(var y=miny;y<=maxy;y++){
+      for(var x=minx;x<=maxx;x++){
+        //console.log("x/y: ",x,"y",y, " pos: ",i, " tiles: ",tiles[i][0],"/",tiles[i][1]);            
+        missingtiles.push([x,y]);
+      }
+	  }
+	  
+	  //zjisteni indexu ctvercu, ktere jsou jiz projete
+	  var toremove = tiles.map(a => missingtiles.findIndex(b => a.every((v, i) => v === b[i])))
+    
+   
+	  //odstranime indexy neprojetych ctvercu
+	  //toremove = toremove.filter(function(e) { return e !== -1 })
+	  for(var i=toremove.length-1;i>=0;i--){
+		  missingtiles.splice(toremove[i],1);
+	  }
+
+	  var kmlcontent = "";
+	  i = 0;
+    var stringstart = "<Placemark><LineString><coordinates>";
+    var stringend = "</coordinates></LineString></Placemark>";
+    var kmlarray = [];
+		while(i<missingtiles.length){
+      kmlarray.push(stringstart);
+      kmlarray.push(getKMLCoordinates(missingtiles[i]));
+      kmlarray.push(stringend);
+			i++;
+      
+	  }
+		kmlcontent = '<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom"><Document><name> - Missing Tiles</name><open>1</open><Style id="s">  <LineStyle>    <color>ff0000ff</color>	<width>1</width>  </LineStyle></Style><Folder>  <name>Missing Tiles</name>  <open>1</open>';
+  	kmlcontent += kmlarray.join('');
+  	kmlcontent += '</Folder></Document></kml>';
+  
+  
+  var encoded = window.btoa(kmlcontent);
+	var file = "data:application/octet-stream;charset=utf-8;base64,"+encoded;
+	saveAs(file, 'missingtiles.kml');  
+}
+
 function convertDate(date){
 	date.setMinutes(date.getMinutes()-date.getTimezoneOffset()); //toISOString ignores TZ offset
 	return date.toISOString().split("T",1)[0].replace(/-/g,"");
 }
 
-function parseResponse(data, page){
+function parseResponse(data, page,type){
 	/*Debug*/var time = new Date();
 	var jsonString = JSON.parse(data);
 	var activitiestmp = jsonString["activities"];
@@ -209,7 +287,7 @@ function parseResponse(data, page){
 	console.log("Selected activities: ",activities.length);
 	
 	if (activitiestmp.length === jsonString["meta"]["limit"]){
-		downloadData(page+1);
+		downloadData(page+1,type);
 		return;
 	}
 	
@@ -219,17 +297,20 @@ function parseResponse(data, page){
 	}	
 
 	console.log("Converting tiles...");
-	convertTilesToGeoJSON(data);
+  if (type==0)
+	  convertTilesToGeoJSON(data);
+  else
+    convertTilesToMissingKML();
 	/*Debug*/console.log("Conversion time:", new Date()-time, "ms");
 }
 
-function downloadData(page){
+function downloadData(page,type){
 	console.log("Downloading page #"+page);
 	http = getXMLHttp();
 	http.onreadystatechange = function(event) {
 		if (this.readyState === XMLHttpRequest.DONE) {
 			if (this.status === 200) {
-				parseResponse(this.responseText, page);
+				parseResponse(this.responseText, page, type);
 				jQuery("#menu_item_geojson").css('color', '');
 			} else {
 				console.log("Answer status: %d (%s)", this.status, this.statusText);
@@ -245,10 +326,10 @@ function downloadData(page){
 	http.send(null);
 }
 
-function downloadDataClick(e){
+function downloadDataClick(type){
 	jQuery("#menu_item_geojson").css('color', '#ddd');
 	activities = [];
-	downloadData(1);
+	downloadData(1,type);
 }
 
 
@@ -263,7 +344,9 @@ $( document ).ready(function() {
 	try {
 		if (jQuery("#menu_item_geojson").length===0){
 			jQuery(".left-menu").find(".ui-menu").append('<li id="menu_item_geojson" role="menu-item" tabindex="0" class="ui-menu-option"><div class="ui-menu-option__content"><span class="ui-icon ui-menu-option__icon material-icons"><img id="geojsonico" src=""></span> <div class="ui-menu-option__text">GeoJSON</div> <!----></div> <div class="ui-ripple-ink"></div></li>');
-			document.getElementById("menu_item_geojson").addEventListener("click", downloadDataClick);
+      jQuery(".left-menu").find(".ui-menu").append('<li id="menu_item_kml" role="menu-item" tabindex="0" class="ui-menu-option"><div class="ui-menu-option__content"><span class="ui-icon ui-menu-option__icon material-icons"><img id="kmlico" src=""></span> <div class="ui-menu-option__text">KML</div> <!----></div> <div class="ui-ripple-ink"></div></li>');
+			document.getElementById("menu_item_geojson").addEventListener("click", function(){downloadDataClick(0);}, false);
+			document.getElementById("menu_item_kml").addEventListener("click",  function(){downloadDataClick(1);}, false);
 		}
 	} catch { console.log("Wrong page..")}
 });

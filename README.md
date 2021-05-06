@@ -1,7 +1,7 @@
 # TilesToGeoJSON
 Konverze strava aktivit ze statshunters.com do souboru GeoJSON
 
-V levém menu na statshunters.com bude po načtení stránky přidána nová položka "GoeJSON". Po kliknutí na tuto položku dojde ke stažení souboru "GeoJSON".
+V levém menu na statshunters.com budou po načtení stránky přidány nové položky "GoeJSON" a "KML". Po kliknutí dojde k vygenerování a stažení souboru "GeoJSON" nebo "KML".
 
 ## Rozšíření pro Firefox
 Aktuální verze rošíření pro Firefox ke stažení zde:
@@ -34,4 +34,4 @@ https://github.com/EpeEpeEpe/TilesToGeoJSON/blob/origin/TilesToGeoJSON.js
 ## Poděkování
 Děkuji uživatelům Bike-forum.cz za testování, rady, náměty,..
 
-Speciální dík patří uživateli "gdh" za implementaci filtrů
+Speciální dík patří uživateli "GdH" za implementaci filtrů
