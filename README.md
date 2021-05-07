@@ -1,5 +1,5 @@
 # TilesToGeoJSON
-Konverze strava aktivit ze statshunters.com do souboru GeoJSON
+Konverze strava aktivit ze statshunters.com do souboru GeoJSON a KML
 
 V levém menu na statshunters.com budou po načtení stránky přidány nové položky "GoeJSON" a "KML". Po kliknutí dojde k vygenerování a stažení souboru "GeoJSON" nebo "KML".
 

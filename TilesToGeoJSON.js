@@ -132,26 +132,25 @@ function convertTilesToMissingKML(){
 		i++;
 	  }
 
-	  //console.log("minx: ", minx, ", maxx: ", maxx,"miny: ",miny,", maxy: ", maxy)
-
+//	  console.log("minx: ", minx, ", maxx: ", maxx,"miny: ",miny,", maxy: ", maxy)
+  
 	  //vygenerovani chybejicich ctvercu ve zjistenych min/max souradnicich
 	  i = 0;
 	  var missingtiles = [];
 	  for(var y=miny;y<=maxy;y++){
       for(var x=minx;x<=maxx;x++){
-        //console.log("x/y: ",x,"y",y, " pos: ",i, " tiles: ",tiles[i][0],"/",tiles[i][1]);            
         missingtiles.push([x,y]);
       }
 	  }
 	  
 	  //zjisteni indexu ctvercu, ktere jsou jiz projete
 	  var toremove = tiles.map(a => missingtiles.findIndex(b => a.every((v, i) => v === b[i])))
-    
-   
-	  //odstranime indexy neprojetych ctvercu
-	  //toremove = toremove.filter(function(e) { return e !== -1 })
+  
+	  //odstranime indexy neprojetych ctvercu - nemelo by tam nic zbyt, ale evidentne tam neco zbylo :-(
+	  toremove = toremove.filter(function(e) { return e !== -1 })
+
 	  for(var i=toremove.length-1;i>=0;i--){
-		  missingtiles.splice(toremove[i],1);
+	  	missingtiles.splice(toremove[i],1);
 	  }
 
 	  var kmlcontent = "";
@@ -290,6 +289,9 @@ function parseResponse(data, page,type){
 		downloadData(page+1,type);
 		return;
 	}
+  
+  jQuery("#menu_item_geojson").css('color', '');
+  jQuery("#menu_item_kml").css('color', '');  
 	
 	if (!activities.length){
 		alert("Nebyly vybrány žádné aktivity!");
@@ -311,8 +313,9 @@ function downloadData(page,type){
 		if (this.readyState === XMLHttpRequest.DONE) {
 			if (this.status === 200) {
 				parseResponse(this.responseText, page, type);
-				jQuery("#menu_item_geojson").css('color', '');
 			} else {
+        jQuery("#menu_item_geojson").css('color', '');
+        jQuery("#menu_item_kml").css('color', '');
 				console.log("Answer status: %d (%s)", this.status, this.statusText);
 				if (this.status==401)
 					alert('Nejprve se přihlaste!');
@@ -328,6 +331,7 @@ function downloadData(page,type){
 
 function downloadDataClick(type){
 	jQuery("#menu_item_geojson").css('color', '#ddd');
+  jQuery("#menu_item_kml").css('color', '#ddd');
 	activities = [];
 	downloadData(1,type);
 }

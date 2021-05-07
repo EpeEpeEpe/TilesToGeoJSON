@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Tiles to GeoJSON",
-  "version": "1.4",
+  "version": "1.4.1",
 
   "description": "Konverze strava aktivit ze statshunters.com do souboru GeoJSON/KML",
   
